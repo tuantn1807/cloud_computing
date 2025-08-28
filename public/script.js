@@ -1,5 +1,5 @@
 // API Base URL
-const API_URL = 'https://cloud-computing-blv6.onrender.com'; // Thay thế bằng URL thực tế của bạn
+const API_URL = 'http://localhost:3000'; // Khi deploy lên Render/Cloud, thay bằng URL công khai
 
 // DOM Elements
 const productForm = document.getElementById('productForm');
@@ -10,7 +10,7 @@ const submitBtn = document.getElementById('submitBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const productList = document.getElementById('productList');
 
-// Get All Products
+// Get all products
 async function getProducts() {
     try {
         const response = await fetch(`${API_URL}/products`);
@@ -22,10 +22,9 @@ async function getProducts() {
     }
 }
 
-// Render Products to Table
+// Render products to table
 function renderProducts(products) {
     productList.innerHTML = '';
-    
     products.forEach(product => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -33,74 +32,46 @@ function renderProducts(products) {
             <td>${product.name}</td>
             <td>${formatCurrency(product.price)}</td>
             <td>
-                <button class="btn btn-success" data-id="${product.id}">Sửa</button>
-                <button class="btn btn-warning" data-id="${product.id}">Xóa</button>
+                <button class="btn btn-success edit-btn" data-id="${product.id}">Sửa</button>
+                <button class="btn btn-danger delete-btn" data-id="${product.id}">Xóa</button>
             </td>
         `;
         productList.appendChild(row);
     });
-    
-    // Add event listeners to edit and delete buttons
-    document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', () => editProduct(button.dataset.id));
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', () => deleteProduct(button.dataset.id));
-    });
 }
 
-// Format Currency (VND)
+// Format currency (VND)
 function formatCurrency(amount) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 }
 
-// Add Product
+// Add product
 async function addProduct(product) {
     try {
-        console.log("Đang gửi dữ liệu sản phẩm:", product);
-        
         const response = await fetch(`${API_URL}/products/add`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(product)
         });
-        
-        // Lấy text response trước để debug
-        const responseText = await response.text();
-        console.log("Raw response:", responseText);
-        
-        // Chuyển đổi text thành JSON nếu có thể
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error("Không thể phân tích phản hồi JSON:", parseError);
-            alert(`Lỗi: Server trả về dữ liệu không hợp lệ`);
-            return;
-        }
-        
+        const data = await response.json();
         if (response.ok) {
             alert('Sản phẩm đã được thêm thành công!');
             resetForm();
             getProducts();
         } else {
-            const errorMessage = data.message || data.error || "Lỗi không xác định";
-            console.error("Lỗi từ server:", errorMessage);
-            alert(`Lỗi: ${errorMessage}`);
+            alert(`Lỗi: ${data.message || 'Không xác định'}`);
         }
     } catch (error) {
-        console.error('Lỗi khi thêm sản phẩm:', error);
-        alert('Không thể thêm sản phẩm. Kiểm tra console để biết thêm chi tiết.');
+        console.error('Error adding product:', error);
+        alert('Không thể thêm sản phẩm.');
     }
 }
 
-// Get Product by ID
+// Get product by ID
 async function getProductById(id) {
     try {
         const response = await fetch(`${API_URL}/products/${id}`);
+        if (!response.ok) throw new Error('Không tìm thấy sản phẩm.');
         return await response.json();
     } catch (error) {
         console.error('Error fetching product:', error);
@@ -109,41 +80,21 @@ async function getProductById(id) {
     }
 }
 
-// Edit Product
-async function editProduct(id) {
-    const product = await getProductById(id);
-    
-    if (product) {
-        // Fill form with product data
-        productIdInput.value = product.id;
-        nameInput.value = product.name;
-        priceInput.value = product.price;
-        
-        // Change form state
-        submitBtn.textContent = 'Cập nhật Sản phẩm';
-        cancelBtn.style.display = 'inline-block';
-    }
-}
-
-// Update Product
+// Update product
 async function updateProduct(id, product) {
     try {
         const response = await fetch(`${API_URL}/products/${id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(product)
         });
-        
         const data = await response.json();
-        
         if (response.ok) {
             alert('Sản phẩm đã được cập nhật thành công!');
             resetForm();
             getProducts();
         } else {
-            alert(`Lỗi: ${data.message}`);
+            alert(`Lỗi: ${data.message || 'Không xác định'}`);
         }
     } catch (error) {
         console.error('Error updating product:', error);
@@ -151,30 +102,25 @@ async function updateProduct(id, product) {
     }
 }
 
-// Delete Product
+// Delete product
 async function deleteProduct(id) {
-    if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) {
-        try {
-            const response = await fetch(`${API_URL}/products/${id}`, {
-                method: 'DELETE'
-            });
-            
-            const data = await response.json();
-            
-            if (response.ok) {
-                alert('Sản phẩm đã bị xóa thành công!');
-                getProducts();
-            } else {
-                alert(`Lỗi: ${data.message}`);
-            }
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            alert('Không thể xóa sản phẩm.');
+    if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) return;
+    try {
+        const response = await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
+        const data = await response.json();
+        if (response.ok) {
+            alert('Sản phẩm đã bị xóa thành công!');
+            getProducts();
+        } else {
+            alert(`Lỗi: ${data.message || 'Không xác định'}`);
         }
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        alert('Không thể xóa sản phẩm.');
     }
 }
 
-// Reset Form
+// Reset form
 function resetForm() {
     productForm.reset();
     productIdInput.value = '';
@@ -182,27 +128,42 @@ function resetForm() {
     cancelBtn.style.display = 'none';
 }
 
-// Event Listeners
+// Event listeners
 productForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const product = {
-        name: nameInput.value,
+        name: nameInput.value.trim(),
         price: parseFloat(priceInput.value)
     };
-    
+    if (!product.name || isNaN(product.price)) {
+        alert('Vui lòng nhập đầy đủ thông tin sản phẩm.');
+        return;
+    }
     if (productIdInput.value) {
-        // Update existing product
         updateProduct(productIdInput.value, product);
     } else {
-        // Add new product
         addProduct(product);
     }
 });
 
 cancelBtn.addEventListener('click', resetForm);
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    getProducts();
+// Event delegation for edit/delete buttons
+productList.addEventListener('click', async function(e) {
+    const id = e.target.dataset.id;
+    if (e.target.classList.contains('edit-btn')) {
+        const product = await getProductById(id);
+        if (product) {
+            productIdInput.value = product.id;
+            nameInput.value = product.name;
+            priceInput.value = product.price;
+            submitBtn.textContent = 'Cập nhật Sản phẩm';
+            cancelBtn.style.display = 'inline-block';
+        }
+    } else if (e.target.classList.contains('delete-btn')) {
+        deleteProduct(id);
+    }
 });
+
+// Initialize
+document.addEventListener('DOMContentLoaded', getProducts);
