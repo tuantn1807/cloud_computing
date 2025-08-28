@@ -1,5 +1,5 @@
 // API Base URL
-const API_URL = 'http://localhost:3000'; // Thay thế bằng URL thực tế của bạn
+const API_URL = 'https://cloud-computing-blv6.onrender.com'; // Thay thế bằng URL thực tế của bạn
 
 // DOM Elements
 const productForm = document.getElementById('productForm');
