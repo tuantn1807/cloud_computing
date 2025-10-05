@@ -1,32 +1,35 @@
-const express = require("express");
-const cors = require("cors");
-require('dotenv').config();
-const path = require('path');
-const { testConnection } = require('./config/db');
-const productRoutes = require('./routes/productRoutes');
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import path from "path";
+import productRoutes from "./src/routes/productRoutes.js";
+import socketService from "./src/services/socketService.js";
+import { testConnection } from "./src/config/db.js"; // import db sau khi dotenv đã load trong db.js
 
 const app = express();
+const server = http.createServer(app);
+// const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { 
+  cors: { origin: process.env.FRONTEND_URL || "*" }
+});
 
-// Middleware
-app.use(cors());
+// Socket.io
+socketService(io);
+
 app.use(express.json());
+app.use(express.static("public"));
 
-// Phục vụ static files từ thư mục public
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Kiểm tra kết nối database
-testConnection();
+// Gắn io vào req để controller có thể phát sự kiện
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 // Routes
-app.use('/products', productRoutes);
+app.use("/api/products", productRoutes);
 
-// Route mặc định
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// Test DB connection
+testConnection();
 
-// Khởi động server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Máy chủ chạy trên cổng ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
