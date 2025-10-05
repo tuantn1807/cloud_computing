@@ -1,6 +1,6 @@
 services:
   backend:
-    build: .
+    image: tuantn1807/cloud_computing-backend:latest
     container_name: product_app
     ports:
       - "3000:3000"
