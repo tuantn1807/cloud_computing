@@ -4,10 +4,17 @@ services:
     container_name: product_app
     ports:
       - "3000:3000"
-    environment:
+    environment:      
+      SERVICE_NAME: "web1"
       DB_HOST: bae9zyfomuyucmfmzbyf-mysql.services.clever-cloud.com
       DB_USER: uzj3rwlbfhmkffyn
       DB_PASSWORD: jvbn8jsTpBnKkzQuu5rI
       DB_NAME: bae9zyfomuyucmfmzbyf
       DB_PORT: 3306
       PORT: 3000
+      DB2_HOST: "bmt6xnejepmufkqprt0s-mysql.services.clever-cloud.com"
+      DB2_USER: "ueksyeo4q6ksqmd5"
+      DB2_PASSWORD: "C5t0PdN0hhGboE6XLhrY"
+      DB2_NAME: "bmt6xnejepmufkqprt0s"
+      DB2_PORT: "3306"
+

@@ -1,4 +1,4 @@
-const API_URL = "https://cloud-computing-backend-latest.onrender.com/api/products"; // 👈 nhớ thêm nếu chưa có
+const API_URL = "/api/products"; //may be error here
 const socket = io();
 
 // 🔹 DOM elements
@@ -41,13 +41,13 @@ productForm.addEventListener("submit", async (e) => {
   const name = document.getElementById("name").value.trim();
   const price = Number(document.getElementById("price").value);
 
-  if (!name || !price) return alert("⚠️ Vui lòng nhập đủ thông tin!");
+  if (!name || !price) return alert("Vui lòng nhập đủ thông tin!");
 
   const method = id ? "PUT" : "POST";
   const url = id ? `${API_URL}/${id}` : API_URL;
 
   try {
-    console.log(`📤 Gửi yêu cầu ${method} tới:`, url, { name, price });
+    console.log(`Gửi yêu cầu ${method} tới:`, url, { name, price });
 
     const res = await fetch(url, {
       method,
@@ -64,22 +64,22 @@ productForm.addEventListener("submit", async (e) => {
     }
 
     if (!res.ok) {
-      console.error("❌ Lỗi khi gửi dữ liệu:", data);
+      console.error("Lỗi khi gửi dữ liệu:", data);
       const message =
         typeof data === "object"
           ? data.error || data.message || JSON.stringify(data)
           : data;
-      alert(`❌ Lỗi ${res.status}: ${message}`);
+      alert(`Lỗi ${res.status}: ${message}`);
       return;
     }
 
-    console.log("✅ Phản hồi thành công:", data);
-    alert("✅ Lưu sản phẩm thành công!");
+    console.log("Phản hồi thành công:", data);
+    alert("Lưu sản phẩm thành công!");
 
     // Reset form về trạng thái thêm mới
     productForm.reset();
     formTitle.textContent = "Thêm sản phẩm";
-    submitBtn.textContent = "💾 Lưu";
+    submitBtn.textContent = "Lưu";
     document.getElementById("productId").value = "";
 
     // Làm mới danh sách
@@ -99,7 +99,7 @@ window.editProduct = (id, name, price) => {
   document.getElementById("price").value = price;
 
   formTitle.textContent = "Chỉnh sửa sản phẩm";
-  submitBtn.textContent = "✏️ Cập nhật";
+  submitBtn.textContent = "Cập nhật";
 };
 
 // ======================================================
@@ -108,7 +108,7 @@ window.editProduct = (id, name, price) => {
 window.deleteProduct = async (id) => {
   if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
   const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-  if (!res.ok) return alert("❌ Không thể xóa sản phẩm!");
+  if (!res.ok) return alert(" Không thể xóa sản phẩm!");
   alert("🗑️ Đã xóa sản phẩm!");
   fetchProducts();
 };
@@ -120,7 +120,7 @@ cancelBtn.addEventListener("click", () => {
   productForm.reset();
   document.getElementById("productId").value = "";
   formTitle.textContent = "Thêm sản phẩm";
-  submitBtn.textContent = "💾 Lưu";
+  submitBtn.textContent = " Lưu";
 });
 
 // ======================================================

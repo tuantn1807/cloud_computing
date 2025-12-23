@@ -5,6 +5,10 @@ import {
   deleteProduct,
 } from "../models/productModel.js";
 
+
+const SERVICE_NAME = process.env.SERVICE_NAME;
+const TARGET_SERVICE = SERVICE_NAME === "web1" ? "web2" : "web1";
+
 export const productController = {
   async getAll(req, res) {
     try {
@@ -17,8 +21,11 @@ export const productController = {
 
   async create(req, res) {
     try {
+      // 1. CRUD DB chính
       const newProduct = await createProduct(req.body);
-      req.io.emit("product_updated"); // phát sự kiện realtime
+      // 3. Realtime UI
+      req.io.emit("product_updated");
+
       res.status(201).json(newProduct);
     } catch (err) {
       res.status(500).json({ error: err.message });
